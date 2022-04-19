@@ -17,6 +17,7 @@
     "gravatar": "^1.8.2",
     "mongoose": "^6.3.0",
     "morgan": "^1.10.0",
-    "node-gyp": "^9.0.0"
+    "node-gyp": "^9.0.0",
+    "webpack": "^5.72.0"
   }
 }
