@@ -10,7 +10,6 @@ const gravatar = require('gravatar') //utiliza o avatar do email
 //Models
 const User = require("../models/User")
 
-
 //@route POST api/user/register
 //@desc Register user
 //@access Public
