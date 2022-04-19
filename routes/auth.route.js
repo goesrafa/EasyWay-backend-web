@@ -6,9 +6,22 @@ const bcrypt = require('bcryptjs')//criptografia da senha
 //Validação 
 const { checkSchema, validationResult, check } = require('express-validator')
 const gravatar = require('gravatar') //utiliza o avatar do email
-
+const auth = require('../middleware/auth')
 //Models
 const User = require("../models/User")
+
+//@route POST api/user
+//@desc User Information
+//@access Private
+router.get('/', auth, async (req, res) =>{
+    try {
+        const user = await  User.findById(req.user.id).select('-password');
+        res.json(user)
+    } catch (err) {
+        console.log(err.message);
+        res.status(500).send('Server error')
+    }
+})
 
 //@route POST api/user/register
 //@desc Register user
@@ -73,6 +86,69 @@ router.post('/register', [
             }, (err, token) => {
                 if (err) throw err
                 res.json({ token })
+            }
+        )
+    } catch (err) {
+        console.log(err.message);
+        res.status(500).send('Server error')
+    }
+})
+//@route POST api/user/login
+//@desc Login user
+//@access Public
+router.post('/login', [
+    //validação de email e senha
+    check('email', 'Porfavor insira um email válido').isEmail(),
+    check('password', 'Senha é obrigatória').exists()
+], async (req, res)=>{
+    //if caso de erro
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({
+            errors: errors.array()
+        })
+    }
+
+    //if se estiver tudo certo
+    //get email e senha na reuisição do body
+    const {email, password} = req.body;
+
+    try {
+        let user = await User.findOne({
+            email
+        })
+        if(!user){
+            return res.status(400).json({
+                errors: [{
+                    msg: 'Credencial inválida'
+                }]
+            })
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password)
+        if(!isMatch){
+            return res.status(400).json({
+                errors: [{
+                    msg: 'Credencial inválida'
+                }]
+            })
+        }
+
+        //payload for jwt
+        const payload = {
+            user:{
+                id: user.id
+            }
+        }
+        jwt.sign(
+            payload,
+            process.env.JWT_SECRET, {
+                expiresIn: 36000
+            }, (err, token) => {
+                if(err) throw err;
+                res.json({
+                    token
+                })
             }
         )
     } catch (err) {
