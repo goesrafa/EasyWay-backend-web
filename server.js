@@ -6,12 +6,19 @@ const cors = require('cors')
 const app = express()
 require('dotenv').config({
     path: './config/.env'
-})
+});
 
-app.use(express.urlencoded({ extended:true}))
+//MongoDB
+const connectDB = require('./config/db');
+connectDB()
+app.use(express.urlencoded({ 
+    extended:true
+}));
 app.use(morgan('dev'))
 app.use(cors())
 
+//routes
+app.use('/api/user/', require('./routes/auth.route'));
 app.get('/', (req, res) =>{
     res.send('Teste de rota = > home page')
 })
