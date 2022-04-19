@@ -3,8 +3,6 @@ const morgan = require('morgan')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 
-
-
 const app = express()
 app.use(bodyParser.json())
  
@@ -15,7 +13,6 @@ require('dotenv').config({
 //MongoDB
 const connectDB = require('./config/db');
 connectDB()
-
 
 app.use(morgan('dev'))
 app.use(cors())

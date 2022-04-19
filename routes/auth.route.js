@@ -22,29 +22,29 @@ router.post('/register', [
     })
 ], async (req, res) => {
     const errors = validationResult(req);
-        if(!errors.isEmpty()){
+    if (!errors.isEmpty()) {
         return res.status(400).json({
             errors: errors.array()
         });
     }
     //get do email, senha e nome atraves do REQUEST 
-    const { name, email, password} = req.body;
+    const { name, email, password } = req.body;
 
     try {
         //validando se o usuário realmente existe
-        let user = await User.findOne({email});
+        let user = await User.findOne({ email });
 
-        if(user){
+        if (user) {
             return res.status(400).json({
                 errors: [
-                   {
-                    msg: 'Usuário realmente existe'
-                   }
+                    {
+                        msg: 'Usuário realmente existe'
+                    }
                 ]
             })
         }
         const avatar = gravatar.url(email, {
-            s:'200',
+            s: '200',
             r: 'pg',
             d: 'mm'
         })
@@ -55,13 +55,12 @@ router.post('/register', [
         //criptografando a senha
         const salt = await bcrypt.genSalt(10)
         //salvando a senha
-        user.password = bcrypt.hash(password, salt)
+        user.password = await bcrypt.hash(password, salt)
         //salvando no db
         await user.save();
-
         //Gerando o token
-        const payload ={
-            user:{
+        const payload = {
+            user: {
                 id: user.id
             }
         }
@@ -72,11 +71,11 @@ router.post('/register', [
             {
                 expiresIn: 360000
             }, (err, token) => {
-                if(err) throw err;
-                res.json({token})
+                if (err) throw err
+                res.json({ token })
             }
         )
-    } catch (error) {
+    } catch (err) {
         console.log(err.message);
         res.status(500).send('Server error')
     }
